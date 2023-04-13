@@ -89,6 +89,6 @@ func CheckAction(rules Rules, comment string) TypeOfAction {
 	return action
 }
 
-func GetDefaultRules() []byte {
-	return defaultRules
+func GetDefaultRules() Rules {
+	return LoadRules(defaultRules, true)
 }
