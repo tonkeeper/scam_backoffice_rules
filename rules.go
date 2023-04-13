@@ -9,6 +9,9 @@ import (
 	"regexp"
 )
 
+//go:embed default_rules.yaml
+var defaultRules []byte
+
 type TypeOfAction string
 
 const (
@@ -84,4 +87,8 @@ func CheckAction(rules Rules, comment string) TypeOfAction {
 	}
 
 	return action
+}
+
+func GetDefaultRules() []byte {
+	return defaultRules
 }
