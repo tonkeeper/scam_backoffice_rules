@@ -1,8 +1,6 @@
 package scam_backoffice_rules
 
 import (
-	"sort"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -22,18 +20,9 @@ func getTestJetton() *JettonEvaluate {
 			Address: tongo.MustParseAccountID("0:729c13b6df2c07cbf0a06ab63d34af454f3d320ec1bcd8fb5c6d24d0806a17c2"),
 		},
 	}
-	for idx, item := range testKnownJettons {
-		item.NormalizedSymbol = strings.ToLower(normalizeReg.ReplaceAllString(item.Symbol, ""))
-		testKnownJettons[idx] = item
-	}
-
-	sort.Slice(testKnownJettons, func(i, j int) bool {
-		return testKnownJettons[i].NormalizedSymbol < testKnownJettons[j].NormalizedSymbol
-	})
-
-	return &JettonEvaluate{
-		Jettons: testKnownJettons,
-	}
+	j := &JettonEvaluate{}
+	j.updateJettons(testKnownJettons)
+	return j
 }
 
 func TestEvaluateJettons(t *testing.T) {
