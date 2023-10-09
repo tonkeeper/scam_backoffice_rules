@@ -2,11 +2,12 @@ package scam_backoffice_rules
 
 import (
 	"fmt"
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
 	"regexp"
 	"strings"
 	"unicode"
+
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
 var WhiteSymbolsString = "[№+=±$|^<>~`]"
@@ -25,14 +26,29 @@ func IsMn(r rune) bool {
 	return unicode.Is(unicode.Mn, r)
 }
 
-func NormalizeComment(comment string) (string, error) {
-	comment = strings.ToLower(comment)
-	mapOfRuChar := map[string]string{"а": "a", "о": "o", "е": "e", "с": "c", "х": "x", "р": "p"} // "ru": "en"
-	for ru, en := range mapOfRuChar {
-		comment = strings.Replace(comment, ru, en, -1)
+func mapOfUpperRuChar() map[string]string {
+	return map[string]string{"Т": "T", "Н": "H"} // "ru": "en"
+}
+
+func mapOfRuChar() map[string]string {
+	return map[string]string{"а": "a", "о": "o", "е": "e", "с": "c", "х": "x", "р": "p"} // "ru": "en"
+}
+
+func normalizeString(s string) string {
+	for ru, en := range mapOfUpperRuChar() {
+		s = strings.Replace(s, ru, en, -1)
+	}
+	s = strings.ToLower(s)
+	for ru, en := range mapOfRuChar() {
+		s = strings.Replace(s, ru, en, -1)
 	}
 	normalizeTransform := transform.Chain(norm.NFD, transform.RemoveFunc(IsMn), norm.NFC)
-	comment, _, _ = transform.String(normalizeTransform, comment)
+	s, _, _ = transform.String(normalizeTransform, s)
+	return s
+}
+
+func NormalizeComment(comment string) (string, error) {
+	comment = normalizeString(comment)
 	for _, char := range comment {
 		isSymbol := unicode.IsSymbol(char)
 		if isSymbol {
