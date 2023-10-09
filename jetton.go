@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -20,7 +19,7 @@ const jettonPath = "https://raw.githubusercontent.com/tonkeeper/ton-assets/main/
 
 type JettonEvaluate struct {
 	mu      sync.RWMutex
-	Jettons []jetton
+	Jettons map[string]jetton
 }
 
 type jetton struct {
@@ -32,7 +31,7 @@ type jetton struct {
 
 func NewJettonEvaluate() *JettonEvaluate {
 	jettonEvaluate := JettonEvaluate{
-		Jettons: []jetton{},
+		Jettons: map[string]jetton{},
 	}
 	go func() {
 		for {
@@ -55,42 +54,30 @@ func (jr *JettonEvaluate) refresh() error {
 		log.Errorf("failed to download jettons: %v", err)
 		return err
 	}
-	for idx, item := range knownJettons {
-		item.NormalizedSymbol = strings.ToLower(normalizeReg.ReplaceAllString(item.Symbol, ""))
-		knownJettons[idx] = item
-	}
+	jr.updateJettons(knownJettons)
+	return nil
+}
 
-	sort.Slice(knownJettons, func(i, j int) bool {
-		return knownJettons[i].NormalizedSymbol < knownJettons[j].NormalizedSymbol
-	})
+func (jr *JettonEvaluate) updateJettons(knownJettons []jetton) {
+	jettons := make(map[string]jetton, len(knownJettons))
+	for _, item := range knownJettons {
+		item.NormalizedSymbol = strings.ToLower(normalizeReg.ReplaceAllString(item.Symbol, ""))
+		jettons[item.NormalizedSymbol] = item
+	}
 
 	jr.mu.Lock()
 	defer jr.mu.Unlock()
-	jr.Jettons = knownJettons
-
-	return nil
+	jr.Jettons = jettons
 }
 
 func (jr *JettonEvaluate) SearchAction(address tongo.AccountID, symbol string) TypeOfAction {
 	jr.mu.RLock()
-	knownJettons := jr.Jettons
-	jr.mu.RUnlock()
+	defer jr.mu.RUnlock()
 
 	symbol = strings.ToLower(normalizeReg.ReplaceAllString(symbol, ""))
-
-	left, right := 0, len(knownJettons)-1
-	for left <= right {
-		mid := left + (right-left)/2
-
-		if knownJettons[mid].NormalizedSymbol == symbol && knownJettons[mid].Address != address {
-			return Drop
-		} else if knownJettons[mid].NormalizedSymbol < symbol {
-			left = mid + 1
-		} else {
-			right = mid - 1
-		}
+	if jetton, ok := jr.Jettons[symbol]; ok && jetton.Address != address {
+		return Drop
 	}
-
 	return Accept
 }
 
