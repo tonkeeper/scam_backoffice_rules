@@ -41,6 +41,11 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 			wantBlacklisted: true,
 		},
 		{
+			name:            "fake usdt",
+			symbol:          "jU⁣SDT",
+			wantBlacklisted: true,
+		},
+		{
 			name:            "similar to TON, first letter is cyrillic",
 			symbol:          "ТОN",
 			wantBlacklisted: true,
