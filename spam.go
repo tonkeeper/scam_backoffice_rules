@@ -23,7 +23,7 @@ var SpamRegexp = struct {
 }
 
 func IsMn(r rune) bool {
-	return unicode.Is(unicode.Mn, r)
+	return unicode.Is(unicode.Mn, r) || r == 8291
 }
 
 func mapOfUpperRuChar() map[string]string {
