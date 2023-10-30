@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/labstack/gommon v0.4.0
+	github.com/mozillazg/go-unidecode v0.2.0
 	github.com/stretchr/testify v1.7.0
 	github.com/tonkeeper/tongo v1.2.2
 	golang.org/x/text v0.7.0

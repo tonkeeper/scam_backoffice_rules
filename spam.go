@@ -6,6 +6,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/mozillazg/go-unidecode"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 )
@@ -23,7 +24,7 @@ var SpamRegexp = struct {
 }
 
 func IsMn(r rune) bool {
-	return unicode.Is(unicode.Mn, r) || r == 8291
+	return unicode.Is(unicode.Mn, r)
 }
 
 func mapOfUpperRuChar() map[string]string {
@@ -32,6 +33,10 @@ func mapOfUpperRuChar() map[string]string {
 
 func mapOfRuChar() map[string]string {
 	return map[string]string{"а": "a", "о": "o", "е": "e", "с": "c", "х": "x", "р": "p"} // "ru": "en"
+}
+
+func normalizeJettonSymbol(s string) string {
+	return unidecode.Unidecode(normalizeString(s))
 }
 
 func normalizeString(s string) string {
