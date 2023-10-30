@@ -21,6 +21,11 @@ var (
 			Address: tongo.MustParseAccountID("0:729c13b6df2c07cbf0a06ab63d34af454f3d320ec1bcd8fb5c6d24d0806a17c2"),
 		},
 		{
+			Name:    "Valid duplicate of jUSDT",
+			Symbol:  "jUSDT",
+			Address: tongo.MustParseAccountID("-1:729c13b6df2c07cbf0a06ab63d34af454f3d320ec1bcd8fb5c6d24d0806a17c2"),
+		},
+		{
 			Name:    "Ambra",
 			Symbol:  "AMBR",
 			Address: tongo.MustParseAccountID("0:9c2c05b9dfb2a7460fda48fae7409a32623399933a98a7a15599152f37572b49"),
@@ -59,6 +64,12 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 			name:            "original jUSDT",
 			symbol:          "jUSDT",
 			address:         ton.MustParseAccountID("0:729c13b6df2c07cbf0a06ab63d34af454f3d320ec1bcd8fb5c6d24d0806a17c2"),
+			wantBlacklisted: false,
+		},
+		{
+			name:            "valid duplicate of jUSDT",
+			symbol:          "jUSDT",
+			address:         ton.MustParseAccountID("-1:729c13b6df2c07cbf0a06ab63d34af454f3d320ec1bcd8fb5c6d24d0806a17c2"),
 			wantBlacklisted: false,
 		},
 		{
