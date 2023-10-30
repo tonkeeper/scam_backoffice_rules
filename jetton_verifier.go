@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 	"time"
+	"unicode"
 
 	"github.com/avast/retry-go"
 	"github.com/labstack/gommon/log"
@@ -57,7 +58,7 @@ func (verifier *JettonVerifier) run() {
 func (verifier *JettonVerifier) updateJettons(knownJettons []jetton) {
 	jettons := make(map[string]map[tongo.AccountID]jetton, len(knownJettons))
 	for _, item := range knownJettons {
-		normalized := normalizeString(item.Symbol)
+		normalized := normalizeJettonSymbol(item.Symbol)
 		if _, ok := jettons[normalized]; !ok {
 			jettons[normalized] = make(map[tongo.AccountID]jetton)
 		}
@@ -70,7 +71,14 @@ func (verifier *JettonVerifier) updateJettons(knownJettons []jetton) {
 
 // IsBlacklisted returns true if the jetton SYMBOL is similar to any of the well-known jettons.
 func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol string) bool {
-	symbol = normalizeString(symbol)
+	for _, s := range symbol {
+		// if the symbol contains non-printable characters,
+		// we consider it a scam.
+		if !unicode.IsGraphic(s) {
+			return true
+		}
+	}
+	symbol = normalizeJettonSymbol(symbol)
 	if symbol == "ton" {
 		return true
 	}
