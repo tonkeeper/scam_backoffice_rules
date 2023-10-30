@@ -20,7 +20,7 @@ const jettonPath = "https://raw.githubusercontent.com/tonkeeper/ton-assets/main/
 type JettonVerifier struct {
 	// mu protects Jettons
 	mu      sync.RWMutex
-	jettons map[string]jetton
+	jettons map[string]map[tongo.AccountID]jetton
 }
 
 type jetton struct {
@@ -31,7 +31,8 @@ type jetton struct {
 
 func NewJettonVerifier() *JettonVerifier {
 	verifier := JettonVerifier{
-		jettons: map[string]jetton{},
+		// we have valid jettons sharing the same symbol
+		jettons: map[string]map[tongo.AccountID]jetton{},
 	}
 	go verifier.run()
 	return &verifier
@@ -54,12 +55,14 @@ func (verifier *JettonVerifier) run() {
 }
 
 func (verifier *JettonVerifier) updateJettons(knownJettons []jetton) {
-	jettons := make(map[string]jetton, len(knownJettons))
+	jettons := make(map[string]map[tongo.AccountID]jetton, len(knownJettons))
 	for _, item := range knownJettons {
 		normalized := normalizeString(item.Symbol)
-		jettons[normalized] = item
+		if _, ok := jettons[normalized]; !ok {
+			jettons[normalized] = make(map[tongo.AccountID]jetton)
+		}
+		jettons[normalized][item.Address] = item
 	}
-
 	verifier.mu.Lock()
 	defer verifier.mu.Unlock()
 	verifier.jettons = jettons
@@ -73,15 +76,17 @@ func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol st
 	}
 	verifier.mu.RLock()
 	defer verifier.mu.RUnlock()
-	for normalizedSymbol, jetton := range verifier.jettons {
-		if jetton.Address == address && normalizedSymbol == symbol {
-			return false
-		}
-		if normalizedSymbol == symbol {
-			return true
-		}
+
+	jettons, ok := verifier.jettons[symbol]
+	if !ok {
+		// no jettons with such symbol
+		return false
 	}
-	return false
+	if _, ok := jettons[address]; ok {
+		// this jetton is in our list of well-known jettons
+		return false
+	}
+	return true
 }
 
 func downloadJettons() ([]jetton, error) {
