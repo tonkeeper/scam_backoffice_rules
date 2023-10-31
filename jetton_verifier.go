@@ -30,6 +30,29 @@ type jetton struct {
 	Symbol  string          `json:"symbol"`
 }
 
+// allowedRanges specifies what unicode characters are safe to be used in jetton symbols.
+// Unicode is so powerful that it is easy to trick a human into thinking that a scam jetton is a well-known one.
+// So blacklisting is kind of challenging.
+//
+// An ideal jetton should probably have a plain-English symbol, like "jUSDT".
+//
+// If you feel that some unicode range should be added to this list,
+// please create an issue or open a request.
+var allowedRanges = []*unicode.RangeTable{
+	unicode.Common,
+	unicode.Latin,
+	unicode.Cyrillic,
+	unicode.Han,
+	unicode.Devanagari,
+	unicode.Telugu,
+	unicode.Hiragana,
+	unicode.Katakana,
+	// special symbols
+	unicode.M,
+	unicode.P,
+	unicode.Space,
+}
+
 func NewJettonVerifier() *JettonVerifier {
 	verifier := JettonVerifier{
 		// we have valid jettons sharing the same symbol
@@ -75,6 +98,11 @@ func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol st
 		// if the symbol contains non-printable characters,
 		// we consider it a scam.
 		if !unicode.IsGraphic(s) {
+			return true
+		}
+	}
+	for _, s := range symbol {
+		if !unicode.In(s, allowedRanges...) {
 			return true
 		}
 	}

@@ -98,6 +98,54 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 			address:         tongo.AccountID{},
 			wantBlacklisted: false,
 		},
+		{
+			name:            "some standard symbols",
+			symbol:          "Random Symbol!?_-*()[]@#$%^& 0123456789~",
+			address:         tongo.AccountID{},
+			wantBlacklisted: false,
+		},
+		{
+			name:            "valid cyrillic symbol",
+			symbol:          "Токен",
+			address:         tongo.AccountID{},
+			wantBlacklisted: false,
+		},
+		{
+			name:            "valid Chinese symbol",
+			symbol:          "代幣",
+			address:         tongo.AccountID{},
+			wantBlacklisted: false,
+		},
+		{
+			name:            "valid Japanese symbol",
+			symbol:          "トークン",
+			address:         tongo.AccountID{},
+			wantBlacklisted: false,
+		},
+		{
+			name:            "valid German symbol",
+			symbol:          "genießen",
+			address:         tongo.AccountID{},
+			wantBlacklisted: false,
+		},
+		{
+			name:            "valid Hindi symbol",
+			symbol:          "टोकन",
+			address:         tongo.AccountID{},
+			wantBlacklisted: false,
+		},
+		{
+			name:            "valid Marathi symbol",
+			symbol:          "टोकन",
+			address:         tongo.AccountID{},
+			wantBlacklisted: false,
+		},
+		{
+			name:            "valid Telugu symbol",
+			symbol:          "టోకెన్",
+			address:         tongo.AccountID{},
+			wantBlacklisted: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
