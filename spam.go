@@ -56,15 +56,17 @@ func NormalizeComment(comment string) (string, error) {
 	comment = normalizeString(comment)
 	for _, char := range comment {
 		isSymbol := unicode.IsSymbol(char)
-		if isSymbol {
-			humanChar := string(char)
-			isEmoji := SpamRegexp.EmojiRegexp.MatchString(humanChar)
-			if !isEmoji {
-				isSymbol = SpamRegexp.WhiteSymbolsRegexp.MatchString(humanChar)
-				if !isSymbol {
-					return "", fmt.Errorf("invalid charracter")
-				}
-			}
+		if !isSymbol {
+			continue
+		}
+		humanChar := string(char)
+		isEmoji := SpamRegexp.EmojiRegexp.MatchString(humanChar)
+		if isEmoji {
+			continue
+		}
+		isSymbol = SpamRegexp.WhiteSymbolsRegexp.MatchString(humanChar)
+		if !isSymbol {
+			return "", fmt.Errorf("invalid charracter")
 		}
 	}
 	return comment, nil

@@ -4,9 +4,10 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"regexp"
+
 	"github.com/labstack/gommon/log"
 	"gopkg.in/yaml.v3"
-	"regexp"
 )
 
 //go:embed default_rules.yaml
@@ -15,9 +16,10 @@ var defaultRules []byte
 type TypeOfAction string
 
 const (
-	Accept  TypeOfAction = "accept"
-	Drop    TypeOfAction = "drop"
-	UnKnown TypeOfAction = "unknown"
+	Accept   TypeOfAction = "accept"
+	Drop     TypeOfAction = "drop"
+	MarkScam TypeOfAction = "mark_scam"
+	UnKnown  TypeOfAction = "unknown"
 )
 
 type ConvertedRules struct {
