@@ -40,6 +40,7 @@ func normalizeJettonSymbol(s string) string {
 }
 
 func normalizeString(s string) string {
+	s = strings.Trim(s, " ")
 	for ru, en := range mapOfUpperRuChar() {
 		s = strings.Replace(s, ru, en, -1)
 	}
