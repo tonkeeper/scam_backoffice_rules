@@ -30,6 +30,12 @@ var (
 			Symbol:  "AMBR",
 			Address: tongo.MustParseAccountID("0:9c2c05b9dfb2a7460fda48fae7409a32623399933a98a7a15599152f37572b49"),
 		},
+		{
+			// this is a fake token added to the well-known jettons list to ban scam tokens
+			Address: tongo.MustParseAccountID("0:ca9006bd3fb03d355daeeff93b24be90afaa6e3ca0073ff5720f8a852c933278"),
+			Name:    "Tether USD",
+			Symbol:  "USDT",
+		},
 	}
 )
 
@@ -48,6 +54,11 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 		{
 			name:            "fake usdt",
 			symbol:          "jUSDT ",
+			wantBlacklisted: true,
+		},
+		{
+			name:            "fake usdt",
+			symbol:          "USD₮",
 			wantBlacklisted: true,
 		},
 		{
