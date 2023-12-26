@@ -28,7 +28,11 @@ func IsMn(r rune) bool {
 }
 
 func mapOfUpperRuChar() map[string]string {
-	return map[string]string{"Т": "T", "Н": "H"} // "ru": "en"
+	return map[string]string{
+		"Т": "T", // ru -> en
+		"Н": "H", // ru -> en
+		"₮": "T", // chinese -> en
+	}
 }
 
 func mapOfRuChar() map[string]string {
