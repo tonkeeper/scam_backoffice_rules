@@ -127,12 +127,6 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 			wantBlacklisted: false,
 		},
 		{
-			name:            "valid Chinese symbol",
-			symbol:          "代幣",
-			address:         tongo.AccountID{},
-			wantBlacklisted: false,
-		},
-		{
 			name:            "valid Japanese symbol",
 			symbol:          "トークン",
 			address:         tongo.AccountID{},

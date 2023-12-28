@@ -38,19 +38,51 @@ type jetton struct {
 //
 // If you feel that some unicode range should be added to this list,
 // please create an issue or open a request.
-var allowedRanges = []*unicode.RangeTable{
-	unicode.Common,
+var allowedRanges = []*unicode.RangeTable{ //ordered by popularity
 	unicode.Latin,
-	unicode.Cyrillic,
-	unicode.Han,
-	unicode.Devanagari,
-	unicode.Telugu,
-	unicode.Hiragana,
-	unicode.Katakana,
-	// special symbols
-	unicode.M,
-	unicode.P,
+	unicode.ASCII_Hex_Digit,
 	unicode.Space,
+	unicode.Mark,
+	unicode.Dash,
+	simplePunct,
+	unicode.Cyrillic,
+	manuallyWhitelisted,
+	unicode.Hyphen,
+
+	unicode.Telugu,
+	unicode.Devanagari,
+	unicode.Katakana,
+}
+
+var simplePunct = &unicode.RangeTable{
+	R16: []unicode.Range16{
+		{0x0021, 0x0023, 1},
+		{0x0025, 0x002a, 1},
+		{0x002c, 0x002f, 1},
+		{0x003a, 0x003b, 1},
+		{0x003f, 0x0040, 1},
+		{0x005b, 0x005d, 1},
+		{0x005f, 0x007b, 28},
+		{0x007d, 0x00a1, 36},
+	},
+}
+
+var manuallyWhitelisted = &unicode.RangeTable{
+	R16: []unicode.Range16{
+		{36, 36, 1},   //$
+		{43, 43, 1},   //+
+		{61, 61, 1},   //=
+		{126, 126, 1}, //~
+	},
+	R32: []unicode.Range32{
+		{128142, 128142, 1}, //💎
+		{10084, 10084, 1},   //❤
+		{0x56fd, 0x56fd, 1}, //国
+		{0x4eba, 0x4eba, 1}, //人
+		{0x9fb1, 0x9fb1, 1}, //龱
+		{0x5e01, 0x5e01, 1}, //币
+
+	},
 }
 
 func NewJettonVerifier() *JettonVerifier {

@@ -27,16 +27,63 @@ func IsMn(r rune) bool {
 	return unicode.Is(unicode.Mn, r)
 }
 
-func mapOfUpperRuChar() map[string]string {
-	return map[string]string{
-		"Т": "T", // ru -> en
-		"Н": "H", // ru -> en
-		"₮": "T", // chinese -> en
-	}
-}
+var mappingRunes = map[rune]rune{
+	'Н': 'H', // ru -> en
+	'₮': 'T', // chinese -> en
+	'с': 'c', // ru -> en
+	'р': 'p', // ru -> en
 
-func mapOfRuChar() map[string]string {
-	return map[string]string{"а": "a", "о": "o", "е": "e", "с": "c", "х": "x", "р": "p"} // "ru": "en"
+	'౸':    'Q', //telugu
+	'౦':    'O', //telugu
+	0x400:  'E', //Ѐ cyrillic
+	0x401:  'E', // Ё cyrillic
+	0x405:  'S', // Ѕ cyrillic
+	0x406:  'I', // І cyrillic
+	0x407:  'I', // Ї cyrillic
+	0x408:  'J', // Ј cyrillic
+	0x40c:  'K', // Ќ cyrillic
+	0x40e:  'Y', // Ў cyrillic
+	0x410:  'A', // А cyrillic
+	0x412:  'B', // В cyrillic
+	0x415:  'E', // Е cyrillic
+	0x41a:  'K', // К cyrillic
+	0x41c:  'M', // М cyrillic
+	0x41e:  'O', // О cyrillic
+	0x420:  'P', // Р cyrillic
+	0x421:  'C', // С cyrillic
+	0x422:  'T', // Т cyrillic
+	0x423:  'Y', // У cyrillic
+	0x425:  'X', // Х cyrillic
+	0x430:  'a', // а cyrillic
+	0x435:  'e', // е cyrillic
+	0x43e:  'o', // о cyrillic
+	0x445:  'x', // х cyrillic
+	0x450:  'e', // ѐ cyrillic
+	0x451:  'e', // ё cyrillic
+	0x455:  's', // ѕ cyrillic
+	0x456:  'i', // і cyrillic
+	0x457:  'i', // ї cyrillic
+	0x458:  'j', // ј cyrillic
+	0x49a:  'K', // Қ cyrillic
+	0x49b:  'k', // қ cyrillic
+	0x49c:  'K', // Ҝ cyrillic
+	0x49e:  'K', // Ҝ cyrillic
+	0x4a2:  'H', // Ң cyrillic
+	0x4a4:  'H', // Ҥ cyrillic
+	0x4aa:  'C', // Ҫ cyrillic
+	0x4ac:  'T', // Ҭ cyrillic
+	0x4b2:  'X', // Ҳ cyrillic
+	0x4c3:  'K', // Ӄ cyrillic
+	0x4c7:  'H', // Ӈ cyrillic
+	0x4d0:  'A', // Ӑ cyrillic
+	0x4d2:  'A', // Ӓ cyrillic
+	0x4d6:  'E', //Ӗ cyrillic
+	0x4d7:  'e', //ӗ cyrillic
+	0x51a:  'Q', //Ԛ cyrillic
+	0x51b:  'q', //ԛ cyrillic
+	0x51c:  'W', //Ԝ cyrillic
+	0x51d:  'w', //ԝ cyrillic
+	0x1c85: 'm', //ᲅ georgian
 }
 
 func normalizeJettonSymbol(s string) string {
@@ -44,14 +91,19 @@ func normalizeJettonSymbol(s string) string {
 }
 
 func normalizeString(s string) string {
-	s = strings.Trim(s, " ")
-	for ru, en := range mapOfUpperRuChar() {
-		s = strings.Replace(s, ru, en, -1)
+	var b strings.Builder
+	for _, char := range s {
+		if char == ' ' {
+			continue
+		}
+		if m, ok := mappingRunes[char]; ok {
+			b.WriteRune(m)
+		} else {
+			b.WriteRune(char)
+		}
 	}
-	s = strings.ToLower(s)
-	for ru, en := range mapOfRuChar() {
-		s = strings.Replace(s, ru, en, -1)
-	}
+	s = strings.ToLower(b.String())
+
 	normalizeTransform := transform.Chain(norm.NFD, transform.RemoveFunc(IsMn), norm.NFC)
 	s, _, _ = transform.String(normalizeTransform, s)
 	return s
