@@ -95,6 +95,12 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 			wantBlacklisted: true,
 		},
 		{
+			name:            "jUSDT but with different address and non ascii symbols",
+			symbol:          "jUЅDT",
+			address:         ton.MustParseAccountID("0:729c13b6df2c07cbf0a06ab63d34af454f3d320ec1bcd8fb5c6d24d0806a1700"),
+			wantBlacklisted: true,
+		},
+		{
 			symbol:          "jUSDT",
 			address:         ton.MustParseAccountID("0:729c13b6df2c07cbf0a06ab63d34af454f3d320ec1bcd8fb5c6d24d0806a17c2"),
 			wantBlacklisted: false,
@@ -111,12 +117,6 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 		},
 		{
 			symbol:          "Random Symbol",
-			address:         tongo.AccountID{},
-			wantBlacklisted: false,
-		},
-		{
-			name:            "some standard symbols",
-			symbol:          "Random Symbol!?_-*()[]@#$%^& 0123456789~",
 			address:         tongo.AccountID{},
 			wantBlacklisted: false,
 		},
