@@ -94,7 +94,6 @@ func runeMapper(r rune) rune {
 }
 
 func normalizeString(s string) string {
-	fmt.Println(s, len(s))
 	normalizeTransform := transform.Chain(
 		norm.NFKD, //unicode decomposition and replacing similar characters
 		runes.Remove(runes.Predicate(unicode.IsMark)),
@@ -103,11 +102,7 @@ func normalizeString(s string) string {
 		runes.Map(unicode.ToLower),
 		norm.NFC, //return back for usual unicode form
 	)
-	s, _, err := transform.String(normalizeTransform, s)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(s, len(s))
+	s, _, _ = transform.String(normalizeTransform, s)
 	return s
 }
 
