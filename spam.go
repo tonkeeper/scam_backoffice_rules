@@ -3,10 +3,10 @@ package scam_backoffice_rules
 import (
 	"fmt"
 	"regexp"
-	"strings"
 	"unicode"
 
 	"github.com/mozillazg/go-unidecode"
+	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 )
@@ -21,10 +21,6 @@ var SpamRegexp = struct {
 }{
 	WhiteSymbolsRegexp: regexp.MustCompile(WhiteSymbolsString),
 	EmojiRegexp:        regexp.MustCompile(EmojiRegexpString),
-}
-
-func IsMn(r rune) bool {
-	return unicode.Is(unicode.Mn, r)
 }
 
 var mappingRunes = map[rune]rune{
@@ -90,22 +86,28 @@ func normalizeJettonSymbol(s string) string {
 	return unidecode.Unidecode(normalizeString(s))
 }
 
-func normalizeString(s string) string {
-	var b strings.Builder
-	for _, char := range s {
-		if char == ' ' {
-			continue
-		}
-		if m, ok := mappingRunes[char]; ok {
-			b.WriteRune(m)
-		} else {
-			b.WriteRune(char)
-		}
+func runeMapper(r rune) rune {
+	if m, ok := mappingRunes[r]; ok {
+		return m
 	}
-	s = strings.ToLower(b.String())
+	return r
+}
 
-	normalizeTransform := transform.Chain(norm.NFD, transform.RemoveFunc(IsMn), norm.NFC)
-	s, _, _ = transform.String(normalizeTransform, s)
+func normalizeString(s string) string {
+	fmt.Println(s, len(s))
+	normalizeTransform := transform.Chain(
+		norm.NFKD, //unicode decomposition and replacing similar characters
+		runes.Remove(runes.Predicate(unicode.IsMark)),
+		runes.Remove(runes.Predicate(unicode.IsSpace)),
+		runes.Map(runeMapper),
+		runes.Map(unicode.ToLower),
+		norm.NFC, //return back for usual unicode form
+	)
+	s, _, err := transform.String(normalizeTransform, s)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(s, len(s))
 	return s
 }
 
