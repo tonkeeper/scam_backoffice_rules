@@ -1,6 +1,7 @@
 package scam_backoffice_rules
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -160,4 +161,19 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 
 		})
 	}
+}
+
+func TestJettonVerifier_run(t *testing.T) {
+	verifier := &JettonVerifier{
+		jettons: map[string]map[tongo.AccountID]jetton{},
+	}
+	knownJettons, err := downloadJettons()
+	require.Nil(t, err)
+	verifier.updateJettons(knownJettons)
+
+	jettons := verifier.jettons[""]
+	for _, jetton := range jettons {
+		fmt.Printf("jetton %v simplified to an empty string\n", jetton.Name)
+	}
+	require.Equal(t, 0, len(jettons))
 }
