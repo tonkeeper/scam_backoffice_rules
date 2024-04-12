@@ -48,7 +48,6 @@ var allowedRanges = []*unicode.RangeTable{ //ordered by popularity
 	unicode.Cyrillic,
 	manuallyWhitelisted,
 	unicode.Hyphen,
-
 	unicode.Telugu,
 	unicode.Devanagari,
 	unicode.Katakana,
@@ -73,6 +72,7 @@ var manuallyWhitelisted = &unicode.RangeTable{
 		{43, 43, 1},   //+
 		{61, 61, 1},   //=
 		{126, 126, 1}, //~
+		{8366, 8366, 1},
 	},
 	R32: []unicode.Range32{
 		{0x2764, 0x2764, 1},   //❤
