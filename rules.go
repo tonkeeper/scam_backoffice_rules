@@ -74,12 +74,10 @@ func LoadRules(bytesOfRules []byte, yamlConverted bool) Rules {
 
 func CheckAction(rules Rules, comment string) TypeOfAction {
 	var err error
-
 	comment, err = NormalizeComment(comment)
 	if err != nil {
 		return Drop
 	}
-
 	action := UnKnown
 	for _, rule := range rules {
 		action = rule.Evaluate(comment)
@@ -87,7 +85,6 @@ func CheckAction(rules Rules, comment string) TypeOfAction {
 			break
 		}
 	}
-
 	return action
 }
 
