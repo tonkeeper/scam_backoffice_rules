@@ -23,6 +23,10 @@ var spamRegexp = struct {
 	emojiRegexp:        regexp.MustCompile(EmojiRegexpString),
 }
 
+var isZeroWidthSpace = func(r rune) bool {
+	return unicode.IsControl(r) || r == 0x200B
+}
+
 var mappingRunes = map[rune]rune{
 	'Н': 'H', // ru -> en
 	'₮': 'T', // chinese -> en
@@ -30,9 +34,9 @@ var mappingRunes = map[rune]rune{
 	'р': 'p', // ru -> en
 	'0': 'O',
 
-	'౸':    'Q', //telugu
-	'౦':    'O', //telugu
-	0x400:  'E', //Ѐ cyrillic
+	'౸':    'Q', // telugu
+	'౦':    'O', // telugu
+	0x400:  'E', // Ѐ cyrillic
 	0x401:  'E', // Ё cyrillic
 	0x405:  'S', // Ѕ cyrillic
 	0x406:  'I', // І cyrillic
@@ -74,13 +78,14 @@ var mappingRunes = map[rune]rune{
 	0x4c7:  'H', // Ӈ cyrillic
 	0x4d0:  'A', // Ӑ cyrillic
 	0x4d2:  'A', // Ӓ cyrillic
-	0x4d6:  'E', //Ӗ cyrillic
-	0x4d7:  'e', //ӗ cyrillic
-	0x51a:  'Q', //Ԛ cyrillic
-	0x51b:  'q', //ԛ cyrillic
-	0x51c:  'W', //Ԝ cyrillic
-	0x51d:  'w', //ԝ cyrillic
-	0x1c85: 'm', //ᲅ georgian
+	0x4d6:  'E', // Ӗ cyrillic
+	0x4d7:  'e', // ӗ cyrillic
+	0x51a:  'Q', // Ԛ cyrillic
+	0x51b:  'q', // ԛ cyrillic
+	0x51c:  'W', // Ԝ cyrillic
+	0x51d:  'w', // ԝ cyrillic
+	0x1c85: 'm', // ᲅ georgian
+	0x06D4: '.', // . arabic full stop
 }
 
 func normalizeJettonSymbol(s string) string {
@@ -88,6 +93,7 @@ func normalizeJettonSymbol(s string) string {
 		norm.NFKD, //unicode decomposition and replacing similar characters
 		runes.Remove(runes.Predicate(unicode.IsMark)),
 		runes.Remove(runes.Predicate(unicode.IsSpace)),
+		runes.Remove(runes.Predicate(isZeroWidthSpace)),
 		runes.Map(runeMapper),
 		runes.Map(unicode.ToLower),
 		norm.NFC, //return back for usual unicode form
@@ -108,6 +114,7 @@ func normalizeString(s string) string {
 		norm.NFKD, //unicode decomposition and replacing similar characters
 		runes.Remove(runes.Predicate(unicode.IsMark)),
 		runes.Remove(runes.Predicate(unicode.IsSpace)),
+		runes.Remove(runes.Predicate(isZeroWidthSpace)),
 		runes.Map(runeMapper),
 		runes.Map(unicode.ToLower),
 		norm.NFC, //return back for usual unicode form
@@ -121,6 +128,7 @@ func NormalizeComment(comment string) (string, error) {
 		norm.NFKD, //unicode decomposition and replacing similar characters
 		runes.Map(runeMapper),
 		runes.Map(unicode.ToLower),
+		runes.Remove(runes.Predicate(isZeroWidthSpace)),
 		norm.NFC, //return back for usual unicode form
 	)
 	comment, _, _ = transform.String(normalizeTransform, comment)
