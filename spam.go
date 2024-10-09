@@ -95,6 +95,7 @@ func normalizeJettonSymbol(s string) string {
 		runes.Remove(runes.Predicate(isZeroWidthSpace)),
 		runes.Map(runeMapper),
 		runes.Map(unicode.ToLower),
+		runes.Remove(runes.Predicate(unicode.IsPunct)),
 		norm.NFC, //return back for usual unicode form
 	)
 	s, _, _ = transform.String(normalizeTransform, s)
