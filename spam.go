@@ -87,7 +87,7 @@ var mappingRunes = map[rune]rune{
 	0x06D4: '.', // . arabic full stop
 }
 
-func normalizeJettonSymbol(s string) string {
+func NormalizeJettonSymbol(s string) string {
 	normalizeTransform := transform.Chain(
 		norm.NFKD, //unicode decomposition and replacing similar characters
 		runes.Remove(runes.Predicate(unicode.IsMark)),

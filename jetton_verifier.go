@@ -113,7 +113,7 @@ func (verifier *JettonVerifier) run() {
 func (verifier *JettonVerifier) updateJettons(knownJettons []jetton) {
 	jettons := make(map[string]map[tongo.AccountID]jetton, len(knownJettons))
 	for _, item := range knownJettons {
-		normalized := normalizeJettonSymbol(item.Symbol)
+		normalized := NormalizeJettonSymbol(item.Symbol)
 		if _, ok := jettons[normalized]; !ok {
 			jettons[normalized] = make(map[tongo.AccountID]jetton)
 		}
@@ -138,7 +138,7 @@ func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol st
 			return true
 		}
 	}
-	symbol = normalizeJettonSymbol(symbol)
+	symbol = NormalizeJettonSymbol(symbol)
 	if symbol == "ton" {
 		return true
 	}
