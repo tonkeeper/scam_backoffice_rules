@@ -32,6 +32,7 @@ var mappingRunes = map[rune]rune{
 	'₮': 'T', // chinese -> en
 	'с': 'c', // ru -> en
 	'р': 'p', // ru -> en
+	'0': 'O', // zero
 
 	'౸':    'Q', // telugu
 	'౦':    'O', // telugu
