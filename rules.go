@@ -4,11 +4,9 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"regexp"
-	"slices"
-
 	"github.com/labstack/gommon/log"
 	"gopkg.in/yaml.v3"
+	"regexp"
 )
 
 //go:embed default_rules.yaml
@@ -25,6 +23,7 @@ const (
 )
 
 const (
+	All     TypeOfItem = "all"
 	Comment TypeOfItem = "comment"
 	Nft     TypeOfItem = "nft"
 )
@@ -33,13 +32,13 @@ type ConvertedRules struct {
 	Rules []struct {
 		Pattern string       `yaml:"pattern" json:"pattern"`
 		Action  TypeOfAction `yaml:"action" json:"action"`
-		Type    []TypeOfItem `yaml:"type" json:"type"`
+		Type    TypeOfItem   `yaml:"type" json:"type"`
 	} `yaml:"rules" json:"rules"`
 }
 
 type Rule struct {
 	Evaluate func(comment string) TypeOfAction
-	Type     []TypeOfItem
+	Type     TypeOfItem
 }
 
 type Rules []Rule
@@ -105,7 +104,7 @@ func CheckActionOfType(rules Rules, text string, itemType TypeOfItem) TypeOfActi
 	}
 	action := UnKnown
 	for _, rule := range rules {
-		if slices.Contains(rule.Type, itemType) {
+		if rule.Type == itemType || rule.Type == All {
 			action = rule.Evaluate(text)
 			if action != UnKnown {
 				break
