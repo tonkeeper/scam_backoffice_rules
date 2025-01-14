@@ -15,7 +15,7 @@ import (
 var defaultRules []byte
 
 type TypeOfAction string
-type TypeOfPattern string
+type TypeOfItem string
 
 const (
 	Accept   TypeOfAction = "accept"
@@ -25,21 +25,21 @@ const (
 )
 
 const (
-	Comment TypeOfPattern = "comment"
-	Nft     TypeOfPattern = "nft"
+	Comment TypeOfItem = "comment"
+	Nft     TypeOfItem = "nft"
 )
 
 type ConvertedRules struct {
 	Rules []struct {
-		Pattern string          `yaml:"pattern" json:"pattern"`
-		Action  TypeOfAction    `yaml:"action" json:"action"`
-		Type    []TypeOfPattern `yaml:"type" json:"type"`
+		Pattern string       `yaml:"pattern" json:"pattern"`
+		Action  TypeOfAction `yaml:"action" json:"action"`
+		Type    []TypeOfItem `yaml:"type" json:"type"`
 	} `yaml:"rules" json:"rules"`
 }
 
 type Rule struct {
 	Evaluate func(comment string) TypeOfAction
-	Type     []TypeOfPattern
+	Type     []TypeOfItem
 }
 
 type Rules []Rule
@@ -97,7 +97,7 @@ func CheckAction(rules Rules, comment string) TypeOfAction {
 	return action
 }
 
-func CheckActionOfType(rules Rules, text string, patternType TypeOfPattern) TypeOfAction {
+func CheckActionOfType(rules Rules, text string, itemType TypeOfItem) TypeOfAction {
 	var err error
 	text, err = NormalizeComment(text)
 	if err != nil {
@@ -105,7 +105,7 @@ func CheckActionOfType(rules Rules, text string, patternType TypeOfPattern) Type
 	}
 	action := UnKnown
 	for _, rule := range rules {
-		if slices.Contains(rule.Type, patternType) {
+		if slices.Contains(rule.Type, itemType) {
 			action = rule.Evaluate(text)
 			if action != UnKnown {
 				break
