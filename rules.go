@@ -4,16 +4,16 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"regexp"
-
 	"github.com/labstack/gommon/log"
 	"gopkg.in/yaml.v3"
+	"regexp"
 )
 
 //go:embed default_rules.yaml
 var defaultRules []byte
 
 type TypeOfAction string
+type TypeOfItem string
 
 const (
 	Accept   TypeOfAction = "accept"
@@ -22,15 +22,23 @@ const (
 	UnKnown  TypeOfAction = "unknown"
 )
 
+const (
+	All     TypeOfItem = "all"
+	Comment TypeOfItem = "comment"
+	Nft     TypeOfItem = "nft"
+)
+
 type ConvertedRules struct {
 	Rules []struct {
 		Pattern string       `yaml:"pattern" json:"pattern"`
 		Action  TypeOfAction `yaml:"action" json:"action"`
+		Type    TypeOfItem   `yaml:"type" json:"type"`
 	} `yaml:"rules" json:"rules"`
 }
 
 type Rule struct {
 	Evaluate func(comment string) TypeOfAction
+	Type     TypeOfItem
 }
 
 type Rules []Rule
@@ -58,14 +66,14 @@ func LoadRules(bytesOfRules []byte, yamlConverted bool) Rules {
 
 		var rule Rule
 		action := inputRule.Action
-		rule.Evaluate = func(comment string) TypeOfAction {
-			match := compiledRegexp.MatchString(comment)
+		rule.Evaluate = func(text string) TypeOfAction {
+			match := compiledRegexp.MatchString(text)
 			if !match {
 				return UnKnown
 			}
 			return action
 		}
-
+		rule.Type = inputRule.Type
 		rules = append(rules, rule)
 	}
 
@@ -83,6 +91,24 @@ func CheckAction(rules Rules, comment string) TypeOfAction {
 		action = rule.Evaluate(comment)
 		if action != UnKnown {
 			break
+		}
+	}
+	return action
+}
+
+func CheckActionOfType(rules Rules, text string, itemType TypeOfItem) TypeOfAction {
+	var err error
+	text, err = NormalizeComment(text)
+	if err != nil {
+		return Drop
+	}
+	action := UnKnown
+	for _, rule := range rules {
+		if rule.Type == itemType || rule.Type == All {
+			action = rule.Evaluate(text)
+			if action != UnKnown {
+				break
+			}
 		}
 	}
 	return action
