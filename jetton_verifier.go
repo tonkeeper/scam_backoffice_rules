@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 	"unicode"
@@ -28,6 +29,15 @@ type jetton struct {
 	Name    string          `json:"name"`
 	Address tongo.AccountID `json:"address"`
 	Symbol  string          `json:"symbol"`
+}
+
+// hardcodedBlacklistedSymbols contains symbols that are known to be used by scam jettons.
+var hardcodedBlacklistedSymbols = []string{
+	"ton",
+	"toncoin",
+	"$usdt",
+	"usdt$",
+	"$usdt$",
 }
 
 // allowedRanges specifies what unicode characters are safe to be used in jetton symbols.
@@ -139,8 +149,10 @@ func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol st
 		}
 	}
 	symbol = NormalizeString(symbol)
-	if symbol == "ton" {
-		return true
+	for _, b := range hardcodedBlacklistedSymbols {
+		if strings.Contains(symbol, b) {
+			return true
+		}
 	}
 	verifier.mu.RLock()
 	defer verifier.mu.RUnlock()

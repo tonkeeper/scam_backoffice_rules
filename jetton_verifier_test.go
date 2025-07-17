@@ -53,6 +53,11 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 			wantBlacklisted: true,
 		},
 		{
+			name:            "similar to TON",
+			symbol:          "$TON",
+			wantBlacklisted: true,
+		},
+		{
 			name:            "similar to TON2",
 			symbol:          "TON.",
 			wantBlacklisted: true,
@@ -65,6 +70,21 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 		{
 			name:            "fake usdt",
 			symbol:          "USD₮",
+			wantBlacklisted: true,
+		},
+		{
+			name:            "fake usdt",
+			symbol:          "$USD₮",
+			wantBlacklisted: true,
+		},
+		{
+			name:            "fake usdt",
+			symbol:          "USD₮$",
+			wantBlacklisted: true,
+		},
+		{
+			name:            "fake usdt",
+			symbol:          "$USD₮",
 			wantBlacklisted: true,
 		},
 		{
