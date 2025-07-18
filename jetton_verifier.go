@@ -3,6 +3,7 @@ package scam_backoffice_rules
 import (
 	"encoding/json"
 	"fmt"
+	"golang.org/x/exp/slices"
 	"net/http"
 	"sync"
 	"time"
@@ -28,6 +29,16 @@ type jetton struct {
 	Name    string          `json:"name"`
 	Address tongo.AccountID `json:"address"`
 	Symbol  string          `json:"symbol"`
+}
+
+// hardcodedBlacklistedSymbols contains symbols that are known to be used by scam jettons.
+var hardcodedBlacklistedSymbols = []string{
+	"ton",
+	"$ton",
+	"toncoin",
+	"$usdt",
+	"usdt$",
+	"$usdt$",
 }
 
 // allowedRanges specifies what unicode characters are safe to be used in jetton symbols.
@@ -139,7 +150,7 @@ func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol st
 		}
 	}
 	symbol = NormalizeString(symbol)
-	if symbol == "ton" {
+	if slices.Contains(hardcodedBlacklistedSymbols, symbol) {
 		return true
 	}
 	verifier.mu.RLock()
