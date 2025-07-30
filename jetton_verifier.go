@@ -39,6 +39,10 @@ var hardcodedBlacklistedSymbols = []string{
 	"$usdt",
 	"usdt$",
 	"$usdt$",
+	"usdc",
+	"$usdc",
+	"usdc$",
+	"$usdc$",
 }
 
 // allowedRanges specifies what unicode characters are safe to be used in jetton symbols.

@@ -93,6 +93,11 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 			wantBlacklisted: true,
 		},
 		{
+			name:            "fake usdc",
+			symbol:          "USĐC",
+			wantBlacklisted: true,
+		},
+		{
 			name:            "similar to TON, first letter is cyrillic",
 			symbol:          "ТОN",
 			wantBlacklisted: true,
@@ -101,6 +106,12 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 			name:            "similar to TON, last letter is cyrillic",
 			symbol:          "jUSDТ",
 			wantBlacklisted: true,
+		},
+		{
+			name:            "original jUSDC",
+			symbol:          "jUSDC",
+			address:         ton.MustParseAccountID("0:7e30fc2b7751ba58a3642f3fd59d5e96a810ddd78d8a310bfe8353bef10500df"),
+			wantBlacklisted: false,
 		},
 		{
 			name:            "original jUSDT",
