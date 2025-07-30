@@ -36,6 +36,7 @@ var mappingRunes = map[rune]rune{
 
 	'౸':    'Q', // telugu
 	'౦':    'O', // telugu
+	0x110:  'D', // Đ latin
 	0x400:  'E', // Ѐ cyrillic
 	0x401:  'E', // Ё cyrillic
 	0x405:  'S', // Ѕ cyrillic
