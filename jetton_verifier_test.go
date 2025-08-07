@@ -43,6 +43,7 @@ var (
 func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 	tests := []struct {
 		name            string
+		tokenName       string
 		symbol          string
 		address         ton.AccountID
 		wantBlacklisted bool
@@ -85,6 +86,12 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 		{
 			name:            "fake usdt",
 			symbol:          "$USD₮",
+			wantBlacklisted: true,
+		},
+		{
+			name:            "fake usdt",
+			tokenName:       "$USDT",
+			symbol:          "Teher USD",
 			wantBlacklisted: true,
 		},
 		{
@@ -193,6 +200,9 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 			verifier := &JettonVerifier{}
 			verifier.updateJettons(testKnownJettons)
 			similar := verifier.IsBlacklisted(tt.address, tt.symbol)
+			if tt.tokenName != "" {
+				similar = similar || verifier.IsBlacklisted(tt.address, tt.tokenName)
+			}
 			require.Equal(t, tt.wantBlacklisted, similar)
 
 		})
