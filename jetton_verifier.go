@@ -3,11 +3,12 @@ package scam_backoffice_rules
 import (
 	"encoding/json"
 	"fmt"
-	"golang.org/x/exp/slices"
 	"net/http"
 	"sync"
 	"time"
 	"unicode"
+
+	"golang.org/x/exp/slices"
 
 	"github.com/avast/retry-go"
 	"github.com/labstack/gommon/log"
@@ -36,6 +37,7 @@ var hardcodedBlacklistedSymbols = []string{
 	"ton",
 	"$ton",
 	"toncoin",
+	"toncoins",
 	"$usdt",
 	"usdt$",
 	"$usdt$",
