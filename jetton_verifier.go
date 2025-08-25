@@ -3,11 +3,12 @@ package scam_backoffice_rules
 import (
 	"encoding/json"
 	"fmt"
-	"golang.org/x/exp/slices"
 	"net/http"
 	"sync"
 	"time"
 	"unicode"
+
+	"golang.org/x/exp/slices"
 
 	"github.com/avast/retry-go"
 	"github.com/labstack/gommon/log"
@@ -32,10 +33,12 @@ type jetton struct {
 }
 
 // hardcodedBlacklistedSymbols contains symbols that are known to be used by scam jettons.
+var hardcodedBlacklistedSymbolsMutex sync.RWMutex
 var hardcodedBlacklistedSymbols = []string{
 	"ton",
 	"$ton",
 	"toncoin",
+	"toncoins",
 	"$usdt",
 	"usdt$",
 	"$usdt$",
@@ -174,7 +177,10 @@ func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol st
 		}
 	}
 	symbol = NormalizeString(symbol)
-	if slices.Contains(hardcodedBlacklistedSymbols, symbol) {
+	hardcodedBlacklistedSymbolsMutex.RLock()
+	copyHardcodedBlacklistedSymbols := hardcodedBlacklistedSymbols
+	hardcodedBlacklistedSymbolsMutex.RUnlock()
+	if slices.Contains(copyHardcodedBlacklistedSymbols, symbol) {
 		return true
 	}
 	verifier.mu.RLock()
@@ -190,6 +196,12 @@ func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol st
 		return false
 	}
 	return true
+}
+
+func SetBlacklistedSymbols(blacklistedSymbols []string) {
+	hardcodedBlacklistedSymbolsMutex.Lock()
+	hardcodedBlacklistedSymbols = blacklistedSymbols
+	hardcodedBlacklistedSymbolsMutex.Unlock()
 }
 
 func downloadJettons() ([]jetton, error) {
