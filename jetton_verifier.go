@@ -33,6 +33,7 @@ type jetton struct {
 }
 
 // hardcodedBlacklistedSymbols contains symbols that are known to be used by scam jettons.
+var hardcodedBlacklistedSymbolsMutex sync.RWMutex
 var hardcodedBlacklistedSymbols = []string{
 	"ton",
 	"$ton",
@@ -176,7 +177,10 @@ func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol st
 		}
 	}
 	symbol = NormalizeString(symbol)
-	if slices.Contains(hardcodedBlacklistedSymbols, symbol) {
+	hardcodedBlacklistedSymbolsMutex.RLock()
+	copyHardcodedBlacklistedSymbols := hardcodedBlacklistedSymbols
+	hardcodedBlacklistedSymbolsMutex.RUnlock()
+	if slices.Contains(copyHardcodedBlacklistedSymbols, symbol) {
 		return true
 	}
 	verifier.mu.RLock()
@@ -194,10 +198,10 @@ func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol st
 	return true
 }
 
-func (verifier *JettonVerifier) SetBlacklisted(blacklistedSymbols []string) {
-	verifier.mu.Lock()
+func SetBlacklistedSymbols(blacklistedSymbols []string) {
+	hardcodedBlacklistedSymbolsMutex.Lock()
 	hardcodedBlacklistedSymbols = blacklistedSymbols
-	verifier.mu.Unlock()
+	hardcodedBlacklistedSymbolsMutex.Unlock()
 }
 
 func downloadJettons() ([]jetton, error) {
