@@ -194,6 +194,12 @@ func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol st
 	return true
 }
 
+func (verifier *JettonVerifier) SetBlacklisted(blacklistedSymbols []string) {
+	verifier.mu.Lock()
+	hardcodedBlacklistedSymbols = blacklistedSymbols
+	verifier.mu.Unlock()
+}
+
 func downloadJettons() ([]jetton, error) {
 	resp, err := http.Get(jettonPath)
 	if err != nil {
