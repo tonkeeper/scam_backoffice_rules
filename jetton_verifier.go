@@ -106,9 +106,12 @@ var simplePunct = &unicode.RangeTable{
 
 var manuallyWhitelisted = &unicode.RangeTable{
 	R16: []unicode.Range16{
+		{34, 34, 1},   //"
 		{36, 36, 1},   //$
+		{39, 39, 1},   //'
 		{43, 43, 1},   //+
 		{61, 61, 1},   //=
+		{96, 96, 1},   //`
 		{126, 126, 1}, //~
 		{8366, 8366, 1},
 	},
