@@ -204,6 +204,24 @@ func TestJettonVerifier_IsSimilarToWellKnownSymbol(t *testing.T) {
 			address:         tongo.AccountID{},
 			wantBlacklisted: false,
 		},
+		{
+			name:            "valid symbol with typographic apostrophe",
+			symbol:          "Juli\u2019s Cat",
+			address:         tongo.AccountID{},
+			wantBlacklisted: false,
+		},
+		{
+			name:            "valid symbol with left single quotation mark",
+			symbol:          "\u2018Token\u2019",
+			address:         tongo.AccountID{},
+			wantBlacklisted: false,
+		},
+		{
+			name:            "valid symbol with typographic double quotes",
+			symbol:          "\u201CSmart\u201D",
+			address:         tongo.AccountID{},
+			wantBlacklisted: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
