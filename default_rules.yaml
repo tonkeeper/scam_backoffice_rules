@@ -5,3 +5,5 @@ rules:
   - pattern: "betfair|cashback"
     action: "drop" # some scam words
 
+  - pattern: "(?i)gram.*ton"
+    action: "mark_scam"
