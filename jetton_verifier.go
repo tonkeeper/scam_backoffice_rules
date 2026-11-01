@@ -1,9 +1,14 @@
 package scam_backoffice_rules
 
 import (
+	"encoding/base64"
+	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 	"unicode"
@@ -12,7 +17,6 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/labstack/gommon/log"
-	"github.com/tonkeeper/tongo"
 )
 
 const jettonPath = "https://raw.githubusercontent.com/tonkeeper/ton-assets/main/jettons.json"
@@ -23,13 +27,18 @@ const jettonPath = "https://raw.githubusercontent.com/tonkeeper/ton-assets/main/
 type JettonVerifier struct {
 	// mu protects Jettons
 	mu      sync.RWMutex
-	jettons map[string]map[tongo.AccountID]jetton
+	jettons map[string]map[accountID]jetton
 }
 
 type jetton struct {
-	Name    string          `json:"name"`
-	Address tongo.AccountID `json:"address"`
-	Symbol  string          `json:"symbol"`
+	Name    string    `json:"name"`
+	Address accountID `json:"address"`
+	Symbol  string    `json:"symbol"`
+}
+
+type accountID struct {
+	workchain int32
+	address   [32]byte
 }
 
 // hardcodedBlacklistedSymbols contains symbols that are known to be used by scam jettons.
@@ -132,7 +141,7 @@ var manuallyWhitelisted = &unicode.RangeTable{
 func NewJettonVerifier() *JettonVerifier {
 	verifier := JettonVerifier{
 		// we have valid jettons sharing the same symbol
-		jettons: map[string]map[tongo.AccountID]jetton{},
+		jettons: map[string]map[accountID]jetton{},
 	}
 	go verifier.run()
 	return &verifier
@@ -155,11 +164,11 @@ func (verifier *JettonVerifier) run() {
 }
 
 func (verifier *JettonVerifier) updateJettons(knownJettons []jetton) {
-	jettons := make(map[string]map[tongo.AccountID]jetton, len(knownJettons))
+	jettons := make(map[string]map[accountID]jetton, len(knownJettons))
 	for _, item := range knownJettons {
 		normalized := NormalizeString(item.Symbol)
 		if _, ok := jettons[normalized]; !ok {
-			jettons[normalized] = make(map[tongo.AccountID]jetton)
+			jettons[normalized] = make(map[accountID]jetton)
 		}
 		jettons[normalized][item.Address] = item
 	}
@@ -169,7 +178,7 @@ func (verifier *JettonVerifier) updateJettons(knownJettons []jetton) {
 }
 
 // IsBlacklisted returns true if the jetton SYMBOL is similar to any of the well-known jettons.
-func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol string) bool {
+func (verifier *JettonVerifier) IsBlacklisted(workchain int32, address [32]byte, symbol string) bool {
 	for _, s := range symbol {
 		// if the symbol contains non-printable characters,
 		// we consider it a scam.
@@ -197,11 +206,24 @@ func (verifier *JettonVerifier) IsBlacklisted(address tongo.AccountID, symbol st
 		// no jettons with such symbol
 		return false
 	}
-	if _, ok := jettons[address]; ok {
+	if _, ok := jettons[accountID{workchain: workchain, address: address}]; ok {
 		// this jetton is in our list of well-known jettons
 		return false
 	}
 	return true
+}
+
+func (id *accountID) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	parsed, err := parseAccountID(s)
+	if err != nil {
+		return err
+	}
+	*id = parsed
+	return nil
 }
 
 func SetBlacklistedSymbols(blacklistedSymbols []string) {
@@ -224,4 +246,61 @@ func downloadJettons() ([]jetton, error) {
 		return nil, err
 	}
 	return jettons, nil
+}
+
+// parseAccountID accepts the raw form "workchain:hex" and the base64 user-friendly form.
+func parseAccountID(s string) (accountID, error) {
+	s = strings.TrimSpace(s)
+	if workchain, hash, ok := strings.Cut(s, ":"); ok {
+		return parseRawAccountID(workchain, hash)
+	}
+	return parseFriendlyAccountID(s)
+}
+
+func parseRawAccountID(workchain, hash string) (accountID, error) {
+	var id accountID
+	wc, err := strconv.ParseInt(workchain, 10, 32)
+	if err != nil {
+		return accountID{}, fmt.Errorf("invalid workchain %q: %w", workchain, err)
+	}
+	id.workchain = int32(wc)
+	b, err := hex.DecodeString(hash)
+	if err != nil || len(b) != len(id.address) {
+		return accountID{}, fmt.Errorf("invalid account hash %q", hash)
+	}
+	copy(id.address[:], b)
+	return id, nil
+}
+
+func parseFriendlyAccountID(s string) (accountID, error) {
+	var id accountID
+	b, err := base64.URLEncoding.DecodeString(s)
+	if err != nil {
+		b, err = base64.StdEncoding.DecodeString(s)
+	}
+	if err != nil || len(b) != 36 {
+		return accountID{}, fmt.Errorf("invalid account address %q", s)
+	}
+	if crc16(b[:34]) != binary.BigEndian.Uint16(b[34:]) {
+		return accountID{}, fmt.Errorf("invalid account address %q: checksum mismatch", s)
+	}
+	id.workchain = int32(int8(b[1]))
+	copy(id.address[:], b[2:34])
+	return id, nil
+}
+
+// crc16 is CRC-16/XMODEM, the checksum of user-friendly addresses.
+func crc16(data []byte) uint16 {
+	var crc uint16
+	for _, b := range data {
+		crc ^= uint16(b) << 8
+		for i := 0; i < 8; i++ {
+			if crc&0x8000 != 0 {
+				crc = crc<<1 ^ 0x1021
+			} else {
+				crc <<= 1
+			}
+		}
+	}
+	return crc
 }
